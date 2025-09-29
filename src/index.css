@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  background: #0f0f0f;
+  color: #fff;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+button { cursor: pointer; transition: all 0.2s; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+input, textarea { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 0.75rem; border-radius: 0.5rem; }
+input:focus, textarea:focus { outline: none; border-color: #8b5cf6; }
