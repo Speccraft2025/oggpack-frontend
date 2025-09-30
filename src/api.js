@@ -1,5 +1,5 @@
-// Use empty string for development (proxied) or the env var for production
-const API_URL = import.meta.env.VITE_API_URL || '';
+// Hardcoded backend URL for production
+const API_URL = 'https://oggpack-backend-production.up.railway.app';
 
 console.log('API_URL configured as:', API_URL);
 
