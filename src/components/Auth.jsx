@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import API_URL from '../api';
 
 function Auth({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,7 +16,7 @@ function Auth({ onLogin }) {
     setError('');
     setLoading(true);
     try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const endpoint = isLogin ? `${API_URL}/api/auth/login` : `${API_URL}/api/auth/register`;
       const payload = isLogin ? { username, password } : { username, password, display_name: displayName, role };
       const { data } = await axios.post(endpoint, payload);
       onLogin(data.token, data.user);
@@ -37,33 +38,33 @@ function Auth({ onLogin }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-300">Username</label>
-            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full px-4 py-3 rounded-lg" required />
+            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-purple-500" required />
           </div>
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-300">Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-lg" required />
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-purple-500" required />
           </div>
           {!isLogin && (
             <>
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-300">Display Name</label>
-                <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full px-4 py-3 rounded-lg" required />
+                <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-purple-500" required />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-300">Role</label>
-                <select value={role} onChange={(e) => setRole(e.target.value)} className="w-full px-4 py-3 rounded-lg">
+                <select value={role} onChange={(e) => setRole(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-purple-500">
                   <option value="creator">Creator</option>
                   <option value="listener">Listener</option>
                 </select>
               </div>
             </>
           )}
-          <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 rounded-lg disabled:opacity-50">
+          <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 rounded-lg disabled:opacity-50 transition-all">
             {loading ? 'Processing...' : (isLogin ? 'Login' : 'Register')}
           </button>
         </form>
         <div className="mt-6 text-center">
-          <button onClick={() => { setIsLogin(!isLogin); setError(''); }} className="text-purple-400 hover:text-purple-300">
+          <button onClick={() => { setIsLogin(!isLogin); setError(''); }} className="text-purple-400 hover:text-purple-300 transition-colors">
             {isLogin ? 'Need an account? Register' : 'Already have an account? Login'}
           </button>
         </div>

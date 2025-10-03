@@ -1,120 +1,82 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_URL from '../api';
 
 function PlayerPreview({ token }) {
   const { id } = useParams();
   const navigate = useNavigate();
-  const audioRef = useRef(null);
-  const [oggpack, setOggpack] = useState(null);
-  const [metadata, setMetadata] = useState({});
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [showMetadata, setShowMetadata] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [publishing, setPublishing] = useState(false);
+  const [caption, setCaption] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchOggpack();
-  }, [id]);
-
-  const fetchOggpack = async () => {
-    try {
-      setOggpack({
-        id,
-        title: 'Preview Track',
-        file_path: 'uploads/ogg/' + id + '.ogg',
-        cover_path: null,
-        metadata_json: '{}'
-      });
-      setLoading(false);
-    } catch (err) {
-      setOggpack({
-        id,
-        title: 'Preview Track',
-        file_path: 'uploads/ogg/' + id + '.ogg',
-        cover_path: null,
-        metadata_json: '{}'
-      });
-      setLoading(false);
-    }
-  };
-
-  const togglePlay = () => {
-    if (isPlaying) {
-      audioRef.current?.pause();
-    } else {
-      audioRef.current?.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
+  const oggpack = JSON.parse(localStorage.getItem('currentOggpack') || '{}');
 
   const handlePublish = async () => {
-    setPublishing(true);
+    setLoading(true);
     try {
-      const caption = prompt('Enter a caption for your post:');
-      if (caption === null) {
-        setPublishing(false);
-        return;
-      }
-      await axios.post('/api/social/posts', { oggpack_id: id, caption }, { headers: { Authorization: 'Bearer ' + token } });
-      alert('✅ Published to Social Feed!');
+      await axios.post(`${API_URL}/api/social/posts`, { oggpack_id: id, caption }, { headers: { Authorization: 'Bearer ' + token } });
+      alert('Published to feed!');
       navigate('/social');
     } catch (err) {
-      alert('Failed to publish');
+      console.error('Failed to publish:', err);
+      alert('Failed to publish post');
     } finally {
-      setPublishing(false);
+      setLoading(false);
     }
   };
 
-  if (loading) return <div className="max-w-4xl mx-auto p-6 text-center"><div className="animate-pulse">Loading...</div></div>;
+  if (!oggpack.id) {
+    return (
+      <div className="max-w-2xl mx-auto p-6 text-center">
+        <p className="text-gray-400">No oggpack to preview. Create one first!</p>
+        <button onClick={() => navigate('/creator')} className="mt-4 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg">
+          Go to Creator
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <button onClick={() => navigate('/creator')} className="mb-6 text-gray-400 hover:text-white">← Back to Creator</button>
-      <div className="bg-gray-800 rounded-xl overflow-hidden">
-        <div className="h-64 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center">
-          {oggpack.cover_path ? <img src={'/' + oggpack.cover_path} alt="Cover" className="w-full h-full object-cover" /> : <div className="text-6xl">🎵</div>}
+    <div className="max-w-2xl mx-auto p-6">
+      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 className="text-3xl font-bold text-white mb-4">Preview Your OGGPack</h2>
+        
+        {oggpack.coverUrl && (
+          <img src={oggpack.coverUrl} alt="Cover" className="w-full h-64 object-cover rounded-lg mb-4" />
+        )}
+        
+        <h3 className="text-2xl font-bold text-white mb-2">{oggpack.title}</h3>
+        <p className="text-gray-400 mb-4">{oggpack.description}</p>
+
+        <div className="bg-gray-900 p-4 rounded-lg mb-4">
+          <audio controls className="w-full" src={oggpack.audioUrl}>
+            Your browser does not support audio playback.
+          </audio>
         </div>
-        <div className="p-6">
-          <h1 className="text-3xl font-bold mb-2">{oggpack.title}</h1>
-          <p className="text-gray-400 mb-6">{oggpack.description}</p>
-          <div className="bg-gray-900 rounded-lg p-4 mb-6">
-            <audio ref={audioRef} src={'/' + oggpack.file_path} onEnded={() => setIsPlaying(false)} className="w-full mb-4" controls />
-            <div className="flex items-center justify-between">
-              <button onClick={togglePlay} className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold">
-                {isPlaying ? '⏸ Pause' : '▶ Play'}
-              </button>
-              <div className="text-gray-400 text-sm">OGG Opus • 128kbps</div>
-            </div>
+
+        {oggpack.metadata && (
+          <div className="bg-gray-900 p-4 rounded-lg mb-6">
+            <h4 className="text-lg font-bold text-white mb-2">Metadata</h4>
+            <pre className="text-gray-300 text-sm overflow-auto">{JSON.stringify(oggpack.metadata, null, 2)}</pre>
           </div>
-          <button onClick={() => setShowMetadata(!showMetadata)} className="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg mb-4">
-            {showMetadata ? '▼ Hide Metadata' : '▶ Show Metadata'}
+        )}
+
+        <div className="border-t border-gray-700 pt-6">
+          <h4 className="text-xl font-bold text-white mb-3">Publish to Feed</h4>
+          <textarea 
+            placeholder="Add a caption for your post..." 
+            value={caption} 
+            onChange={(e) => setCaption(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white mb-4"
+            rows="3"
+          />
+          <button 
+            onClick={handlePublish} 
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 rounded-lg disabled:opacity-50 transition-all"
+          >
+            {loading ? 'Publishing...' : 'Publish to Social Feed'}
           </button>
-          {showMetadata && (
-            <div className="bg-gray-900 rounded-lg p-4 mb-6 space-y-4">
-              {metadata.lyrics && (
-                <div>
-                  <h3 className="font-semibold mb-2">Lyrics</h3>
-                  <pre className="text-gray-300 whitespace-pre-wrap text-sm">{metadata.lyrics}</pre>
-                </div>
-              )}
-              {metadata.credits && (
-                <div>
-                  <h3 className="font-semibold mb-2">Credits</h3>
-                  <p className="text-gray-300 text-sm">{metadata.credits}</p>
-                </div>
-              )}
-            </div>
-          )}
-          <div className="flex items-center space-x-4 mb-6 text-gray-400">
-            <span>👍 0 upvotes (preview)</span>
-            <span>💬 0 comments</span>
-          </div>
-          <div className="flex space-x-4">
-            <button onClick={handlePublish} disabled={publishing} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 rounded-lg disabled:opacity-50">
-              {publishing ? 'Publishing...' : 'Publish to Social Feed'}
-            </button>
-          </div>
         </div>
       </div>
     </div>

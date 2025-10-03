@@ -1,116 +1,104 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_URL from '../api';
 import FeedItem from './FeedItem';
 
 function SocialMode({ token, user }) {
-  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [concerts, setConcerts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showConcertForm, setShowConcertForm] = useState(false);
+  const [showCreateConcert, setShowCreateConcert] = useState(false);
   const [concertTitle, setConcertTitle] = useState('');
   const [concertDesc, setConcertDesc] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchFeed();
+    fetchPosts();
     fetchConcerts();
   }, []);
 
-  const fetchFeed = async () => {
+  const fetchPosts = async () => {
     try {
-      const { data } = await axios.get('/api/social/posts');
+      const { data } = await axios.get(`${API_URL}/api/social/posts`);
       setPosts(data.posts || []);
-      setLoading(false);
     } catch (err) {
-      setLoading(false);
+      console.error('Failed to fetch posts:', err);
     }
   };
 
   const fetchConcerts = async () => {
     try {
-      const { data } = await axios.get('/api/social/concerts');
+      const { data } = await axios.get(`${API_URL}/api/social/concerts`);
       setConcerts(data.concerts || []);
-    } catch (err) {}
-  };
-
-  const handleCreateConcert = async (e) => {
-    e.preventDefault();
-    if (!concertTitle) return alert('Title is required');
-    try {
-      await axios.post('/api/social/concerts', { title: concertTitle, description: concertDesc, start_time: new Date().toISOString() }, { headers: { Authorization: 'Bearer ' + token } });
-      alert('✅ Concert created!');
-      setShowConcertForm(false);
-      setConcertTitle('');
-      setConcertDesc('');
-      fetchConcerts();
     } catch (err) {
-      alert('Failed to create concert');
+      console.error('Failed to fetch concerts:', err);
     }
   };
 
-  if (loading) return <div className="max-w-4xl mx-auto p-6 text-center"><div className="animate-pulse">Loading feed...</div></div>;
+  const handleCreateConcert = async () => {
+    if (!concertTitle.trim()) return;
+    setLoading(true);
+    try {
+      await axios.post(`${API_URL}/api/social/concerts`, { title: concertTitle, description: concertDesc, start_time: new Date().toISOString() }, { headers: { Authorization: 'Bearer ' + token } });
+      setConcertTitle('');
+      setConcertDesc('');
+      setShowCreateConcert(false);
+      fetchConcerts();
+    } catch (err) {
+      console.error('Failed to create concert:', err);
+      alert('Failed to create concert');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Social Feed</h1>
-        <button onClick={() => setShowConcertForm(!showConcertForm)} className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg font-semibold">
-          {showConcertForm ? 'Cancel' : '🎤 Create Concert'}
-        </button>
-      </div>
-      {showConcertForm && (
-        <form onSubmit={handleCreateConcert} className="bg-gray-800 p-6 rounded-xl mb-8 space-y-4">
-          <h2 className="text-xl font-bold">Create Concert Event</h2>
-          <div>
-            <label className="block text-sm font-medium mb-2">Concert Title *</label>
-            <input type="text" value={concertTitle} onChange={(e) => setConcertTitle(e.target.value)} className="w-full" placeholder="Friday Night Live Session" required />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Description</label>
-            <textarea value={concertDesc} onChange={(e) => setConcertDesc(e.target.value)} className="w-full h-24" placeholder="Join us for an exclusive live performance..." />
-          </div>
-          <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 rounded-lg">
-            Create Concert
+    <div className="max-w-2xl mx-auto p-6">
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold text-white mb-4">Social Feed</h2>
+        {user?.role === 'creator' && (
+          <button onClick={() => setShowCreateConcert(!showCreateConcert)} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-2 rounded-lg font-semibold transition-all">
+            {showCreateConcert ? 'Cancel' : '+ Create Concert'}
           </button>
-        </form>
+        )}
+      </div>
+
+      {showCreateConcert && (
+        <div className="bg-gray-800 p-6 rounded-lg mb-6 border border-gray-700">
+          <h3 className="text-xl font-bold text-white mb-4">Create New Concert</h3>
+          <input type="text" placeholder="Concert Title" value={concertTitle} onChange={(e) => setConcertTitle(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white mb-3" />
+          <textarea placeholder="Description" value={concertDesc} onChange={(e) => setConcertDesc(e.target.value)} className="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white mb-3" rows="3" />
+          <button onClick={handleCreateConcert} disabled={loading} className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold disabled:opacity-50">
+            {loading ? 'Creating...' : 'Create Concert'}
+          </button>
+        </div>
       )}
+
       {concerts.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">🎤 Live Concerts</h2>
+          <h3 className="text-2xl font-bold text-white mb-4">🎵 Live Concerts</h3>
           <div className="space-y-4">
             {concerts.map((concert) => (
-              <div key={concert.id} className="bg-gradient-to-r from-pink-900/50 to-purple-900/50 p-6 rounded-xl border border-pink-500/30">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-xl font-bold">{concert.title}</h3>
-                    <p className="text-gray-300 text-sm mb-2">Hosted by {concert.display_name}</p>
-                    {concert.description && <p className="text-gray-400 text-sm mb-4">{concert.description}</p>}
-                  </div>
-                  <button onClick={() => navigate('/concert/' + concert.id)} className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg font-semibold whitespace-nowrap">
-                    Join Concert →
-                  </button>
-                </div>
+              <div key={concert.id} className="bg-gradient-to-r from-purple-900 to-pink-900 p-6 rounded-lg border border-purple-500">
+                <h4 className="text-xl font-bold text-white mb-2">{concert.title}</h4>
+                <p className="text-gray-300 mb-4">{concert.description}</p>
+                <a href={`/concert/${concert.id}`} className="inline-block bg-white text-purple-900 px-6 py-2 rounded-lg font-bold hover:bg-gray-100 transition-colors">
+                  Join Concert →
+                </a>
               </div>
             ))}
           </div>
         </div>
       )}
-      <h2 className="text-2xl font-bold mb-4">Recent Posts</h2>
-      {posts.length === 0 ? (
-        <div className="bg-gray-800 p-12 rounded-xl text-center">
-          <p className="text-gray-400 mb-4">No posts yet. Be the first to share!</p>
-          <button onClick={() => navigate('/creator')} className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg">
-            Create Your First Track
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {posts.map((post) => (
-            <FeedItem key={post.id} post={post} token={token} currentUser={user} onUpdate={fetchFeed} />
-          ))}
-        </div>
-      )}
+
+      <div className="space-y-6">
+        {posts.length === 0 ? (
+          <div className="text-center text-gray-400 py-12">
+            <p className="text-lg">No posts yet. Be the first to share!</p>
+          </div>
+        ) : (
+          posts.map((post) => <FeedItem key={post.id} post={post} token={token} onUpdate={fetchPosts} />)
+        )}
+      </div>
     </div>
   );
 }
