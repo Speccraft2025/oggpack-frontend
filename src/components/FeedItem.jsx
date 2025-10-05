@@ -99,6 +99,15 @@ function FeedItem({ post, token, onUpdate }) {
           <span className="text-xl">💬</span>
           <span>{post.comment_count || 0}</span>
         </button>
+
+        {/* Experience Button */}
+        <button
+          onClick={() => window.location.href = `/experience/${post.oggpack_id}`}
+          className="ml-auto flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-4 py-2 rounded-lg font-semibold text-white transition-all"
+        >
+          <span>✨</span>
+          <span>Experience</span>
+        </button>
       </div>
 
       {showComments && (
