@@ -1,12 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OGGPack Studio</title>
-</head>
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    
+    <!-- Mobile viewport settings -->
+    <meta 
+      name="viewport" 
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    
+    <!-- iOS Web App Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="OGGPack" />
+    
+    <!-- Theme colors for mobile browsers -->
+    <meta name="theme-color" content="#581c87" />
+    <meta name="msapplication-TileColor" content="#581c87" />
+    
+    <!-- Icons for mobile home screen -->
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <!-- Preconnect for faster API calls -->
+    <link rel="preconnect" href="http://localhost:5000" />
+    
+    <!-- Title and Description -->
+    <title>OGGPack Studio - Create, Share, Perform</title>
+    <meta 
+      name="description" 
+      content="The ultimate platform for music creators. Upload, share, and perform live concerts with your audience."
+    />
+    
+    <!-- Open Graph for social sharing -->
+    <meta property="og:title" content="OGGPack Studio" />
+    <meta property="og:description" content="Create, share, and perform music live" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/og-image.png" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="OGGPack Studio" />
+    <meta name="twitter:description" content="Create, share, and perform music live" />
+    
+    <!-- Prevent Google Translate from breaking React -->
+    <meta name="google" content="notranslate" />
+    
+    <!-- Disable tap highlight on mobile -->
+    <style>
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      /* Prevent flash of unstyled content */
+      body {
+        margin: 0;
+        background: linear-gradient(to bottom right, #0f172a, #581c87, #0f172a);
+        min-height: 100vh;
+      }
+      
+      /* Loading state */
+      #root:empty::before {
+        content: "Loading OGGPack...";
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        color: white;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 1.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/index.jsx"></script>
+    
+    <!-- Service Worker for PWA (optional, future enhancement) -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          // Uncomment when you add service-worker.js
+          // navigator.serviceWorker.register('/service-worker.js');
+        });
+      }
+    </script>
+  </body>
 </html>

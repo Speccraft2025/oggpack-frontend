@@ -2,14 +2,420 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
+/* Base Styles */
+* {
   margin: 0;
-  background: #0f0f0f;
-  color: #fff;
-  font-family: system-ui, -apple-system, sans-serif;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-button { cursor: pointer; transition: all 0.2s; }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
-input, textarea { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 0.75rem; border-radius: 0.5rem; }
-input:focus, textarea:focus { outline: none; border-color: #8b5cf6; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Mobile-specific: Prevent zoom on input focus (iOS) */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px !important; /* Prevents iOS zoom */
+  }
+}
+
+/* Custom Scrollbar - Desktop */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(147, 51, 234, 0.5);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(147, 51, 234, 0.7);
+  }
+}
+
+/* Mobile: Hide scrollbar but keep functionality */
+@media (max-width: 767px) {
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+  * {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Mobile: Prevent overscroll bounce */
+@media (max-width: 768px) {
+  body {
+    overscroll-behavior-y: none;
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+  }
+
+  #root {
+    overflow-y: auto;
+    height: 100vh;
+    width: 100%;
+  }
+}
+
+/* Touch-friendly tap highlights */
+button, a {
+  -webkit-tap-highlight-color: rgba(147, 51, 234, 0.2);
+}
+
+/* Disable text selection on buttons (better mobile UX) */
+button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Mobile: Larger touch targets */
+@media (max-width: 768px) {
+  button, 
+  a,
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glassmorphism utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Custom input styles for better mobile experience */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}
+
+/* File input styling */
+input[type="file"] {
+  cursor: pointer;
+}
+
+/* Range slider (audio progress) - Mobile optimized */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Slider track */
+input[type="range"]::-webkit-slider-track {
+  background: rgba(255, 255, 255, 0.1);
+  height: 8px;
+  border-radius: 4px;
+}
+
+input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.1);
+  height: 8px;
+  border-radius: 4px;
+}
+
+/* Slider thumb - Larger for mobile */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  margin-top: -6px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Desktop: Slightly smaller thumb */
+@media (min-width: 768px) {
+  input[type="range"]::-webkit-slider-thumb {
+    width: 16px;
+    height: 16px;
+    margin-top: -4px;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+  }
+
+  input[type="range"]::-webkit-slider-track {
+    height: 8px;
+  }
+
+  input[type="range"]::-moz-range-track {
+    height: 8px;
+  }
+}
+
+/* Hover effects - Desktop only */
+@media (min-width: 768px) {
+  input[type="range"]:hover::-webkit-slider-thumb {
+    transform: scale(1.1);
+  }
+
+  input[type="range"]:hover::-moz-range-thumb {
+    transform: scale(1.1);
+  }
+}
+
+/* Loading spinner */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Safe area insets for iOS notch/home indicator */
+@supports (padding: max(0px)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Mobile landscape mode adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  .mobile-landscape-compact {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* Prevent horizontal scroll on mobile */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+  
+  * {
+    max-width: 100vw;
+  }
+}
+
+/* Line clamp utilities for text truncation */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+/* Focus visible for keyboard navigation (accessibility) */
+*:focus-visible {
+  outline: 2px solid #a855f7;
+  outline-offset: 2px;
+}
+
+/* Remove focus outline for mouse users */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Mobile: Bottom sheet animation */
+@keyframes slideUpSheet {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.bottom-sheet {
+  animation: slideUpSheet 0.3s ease-out;
+}
+
+/* Audio player enhancements */
+audio {
+  display: none;
+}
+
+/* Prevent pull-to-refresh on mobile */
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* Custom checkbox and radio styles */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: #a855f7;
+}
+
+/* Better form validation styles */
+input:invalid:not(:placeholder-shown) {
+  border-color: #ef4444;
+}
+
+input:valid:not(:placeholder-shown) {
+  border-color: #10b981;
+}
+
+/* Smooth transitions for all interactive elements */
+button,
+a,
+input,
+textarea,
+select {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Active state for mobile buttons */
+button:active {
+  transform: scale(0.95);
+}
+
+/* Disable animations for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .glass,
+  .glass-dark {
+    border-width: 2px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
