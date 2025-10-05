@@ -6,7 +6,7 @@ import axios from 'axios';
 const API_URL = 'https://oggpack-backend-production.up.railway.app';
 
 // Get your publishable key from Stripe Dashboard
-const stripePromise = loadStripe('pk_test_YOUR_PUBLISHABLE_KEY_HERE');
+const stripePromise = loadStripe('pk_test_51SEllTG4B2dDVNjOjhRJG9ixpyNR8kPds53ypmPd0REfybQwCUGbFrf26QcHhV3BJLZvFZHv8hhBXacrImaDL9Us009ioChErM');
 
 function CheckoutForm({ oggpackId, amount, onSuccess, onCancel }) {
   const stripe = useStripe();
