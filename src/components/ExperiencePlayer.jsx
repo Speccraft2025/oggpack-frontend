@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import BuyPackButton from './BuyPackButton';
 
 const API_URL = 'https://oggpack-backend-production.up.railway.app';
 
@@ -16,8 +15,7 @@ export default function ExperiencePlayer({ token }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showLyrics, setShowLyrics] = useState(true);
-  const [showCredits, setShowCredits] = useState(false);
+  const [activeMetadata, setActiveMetadata] = useState('lyrics');
 
   useEffect(() => {
     fetchOggpack();
@@ -36,29 +34,9 @@ export default function ExperiencePlayer({ token }) {
   };
 
   const checkOwnership = async () => {
-    // ======================================
-    // MOCK: Bypass payment for UI development
-    // TODO: Remove this when Stripe is working
-    // ======================================
     console.log('🎨 DEVELOPMENT MODE: Mocking ownership as TRUE');
     setOwns(true);
     setLoading(false);
-    return;
-    
-    // Real implementation (commented out for development):
-    /*
-    try {
-      const { data } = await axios.get(
-        `${API_URL}/api/payment/check-ownership/${id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setOwns(data.owns);
-    } catch (err) {
-      console.error('Failed to check ownership:', err);
-    } finally {
-      setLoading(false);
-    }
-    */
   };
 
   const togglePlay = () => {
@@ -101,40 +79,87 @@ export default function ExperiencePlayer({ token }) {
   const metadata = oggpack.metadata_json ? JSON.parse(oggpack.metadata_json) : {};
   const audioUrl = `${API_URL}/uploads/ogg/${id}.ogg`;
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-900 via-gray-900 to-black text-white">
-      {/* Close button */}
-      <button
-        onClick={() => navigate('/social')}
-        className="fixed top-4 right-4 z-50 bg-gray-800/80 hover:bg-gray-700 p-3 rounded-full"
-      >
-        ✕
-      </button>
+  // Mock data for alternate versions and attached files (will be dynamic later)
+  const alternateVersions = [
+    { id: 1, name: 'Main Version', active: true },
+    { id: 2, name: 'Instrumental', active: false },
+    { id: 3, name: 'Acoustic', active: false },
+    { id: 4, name: 'Demo', active: false },
+  ];
 
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        {/* Cover and title */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          <div>
+  const metadataTypes = [
+    { id: 'lyrics', label: 'Lyrics', content: metadata.lyrics },
+    { id: 'credits', label: 'Credits', content: metadata.credits },
+    { id: 'liner', label: 'Liner Notes', content: 'Behind the scenes story...' },
+    { id: 'production', label: 'Production', content: 'Recording details...' },
+    { id: 'story', label: 'The Story', content: 'How this track came to be...' },
+  ];
+
+  const attachedFiles = [
+    { id: 1, name: 'Album Artwork.pdf', type: 'pdf' },
+    { id: 2, name: 'Behind The Scenes.jpg', type: 'image' },
+    { id: 3, name: 'Recording Session.gif', type: 'gif' },
+    { id: 4, name: 'Lyrics Sheet.pdf', type: 'pdf' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-950 to-black text-white">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-900 to-pink-900 px-6 py-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">OGG Experience Player</h1>
+        <button
+          onClick={() => navigate('/social')}
+          className="bg-gray-800/80 hover:bg-gray-700 px-4 py-2 rounded-lg"
+        >
+          ✕ Close
+        </button>
+      </div>
+
+      <div className="flex h-[calc(100vh-64px)]">
+        {/* Left Sidebar - Alternate Versions */}
+        <div className="w-64 bg-gray-900 border-r border-gray-800 p-4">
+          <h3 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">
+            Track Versions
+          </h3>
+          <div className="space-y-2">
+            {alternateVersions.map((version) => (
+              <button
+                key={version.id}
+                className={`w-full px-4 py-3 rounded-lg text-left transition-colors ${
+                  version.active
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold'
+                    : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                }`}
+              >
+                {version.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Window - Player */}
+        <div className="flex-1 flex flex-col">
+          {/* Player Area */}
+          <div className="flex-1 bg-gradient-to-br from-gray-800 to-gray-900 flex flex-col items-center justify-center p-12">
+            {/* Cover Art */}
             {oggpack.cover_path ? (
               <img
                 src={`${API_URL}${oggpack.cover_path}`}
                 alt={oggpack.title}
-                className="w-full rounded-2xl shadow-2xl"
+                className="w-64 h-64 rounded-2xl shadow-2xl mb-8"
               />
             ) : (
-              <div className="w-full aspect-square bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center">
-                <span className="text-6xl">🎵</span>
+              <div className="w-64 h-64 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center mb-8">
+                <span className="text-8xl">🎵</span>
               </div>
             )}
-          </div>
 
-          <div className="flex flex-col justify-center">
-            <h1 className="text-5xl font-bold mb-4">{oggpack.title}</h1>
+            <h2 className="text-4xl font-bold mb-2">{oggpack.title}</h2>
             {oggpack.description && (
-              <p className="text-xl text-gray-300 mb-6">{oggpack.description}</p>
+              <p className="text-gray-400 text-lg mb-8">{oggpack.description}</p>
             )}
 
-            {/* Audio player */}
+            {/* Audio Element */}
             <audio
               ref={audioRef}
               src={audioUrl}
@@ -143,109 +168,90 @@ export default function ExperiencePlayer({ token }) {
               onEnded={() => setIsPlaying(false)}
             />
 
-            <div className="space-y-4">
-              {/* Progress bar */}
-              <div className="w-full bg-gray-700 rounded-full h-2">
+            {/* Play Button */}
+            <button
+              onClick={togglePlay}
+              className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform mb-6"
+            >
+              {isPlaying ? (
+                <span className="text-4xl text-purple-600">⏸</span>
+              ) : (
+                <span className="text-4xl text-purple-600 ml-1">▶</span>
+              )}
+            </button>
+
+            {/* Progress Bar */}
+            <div className="w-full max-w-2xl">
+              <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
                 <div
-                  className="bg-purple-500 h-2 rounded-full transition-all"
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all"
                   style={{ width: `${(currentTime / duration) * 100}%` }}
                 />
               </div>
-
-              {/* Time */}
               <div className="flex justify-between text-sm text-gray-400">
                 <span>{formatTime(currentTime)}</span>
                 <span>{formatTime(duration)}</span>
               </div>
+            </div>
+          </div>
 
-              {/* Play button */}
-              <button
-                onClick={togglePlay}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-lg text-xl font-semibold"
-              >
-                {isPlaying ? '⏸ Pause' : '▶ Play'}
-              </button>
+          {/* Attached Files Section */}
+          <div className="bg-gray-900 border-t border-gray-800 p-4">
+            <h3 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">
+              Attached Files
+            </h3>
+            <div className="grid grid-cols-4 gap-3">
+              {attachedFiles.map((file) => (
+                <button
+                  key={file.id}
+                  className="bg-gradient-to-br from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 px-4 py-3 rounded-lg text-sm font-medium transition-colors"
+                >
+                  {file.name}
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Locked content if not owned */}
-        {!owns && (
-          <div className="bg-gray-800/50 backdrop-blur rounded-2xl p-8 mb-8 border-2 border-purple-500">
-            <div className="text-center mb-6">
-              <h2 className="text-3xl font-bold mb-3">🔒 Unlock Full Experience</h2>
-              <p className="text-gray-300 text-lg">
-                Get synchronized lyrics, full credits, liner notes, and download the .oggpack file
-              </p>
-            </div>
-            <div className="flex justify-center">
-              <BuyPackButton 
-                oggpackId={id} 
-                oggpackTitle={oggpack.title}
-                token={token} 
-              />
-            </div>
+        {/* Right Sidebar - Metadata */}
+        <div className="w-80 bg-gray-900 border-l border-gray-800 flex flex-col">
+          <div className="p-4 space-y-2 border-b border-gray-800">
+            {metadataTypes.map((meta) => (
+              <button
+                key={meta.id}
+                onClick={() => setActiveMetadata(meta.id)}
+                className={`w-full px-4 py-3 rounded-lg text-left transition-colors ${
+                  activeMetadata === meta.id
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold'
+                    : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                }`}
+              >
+                {meta.label}
+              </button>
+            ))}
           </div>
-        )}
 
-        {/* Premium content - only show if owned */}
-        {owns && (
-          <>
-            {/* Tabs */}
-            <div className="flex space-x-4 mb-6">
-              <button
-                onClick={() => { setShowLyrics(true); setShowCredits(false); }}
-                className={`px-6 py-3 rounded-lg font-semibold ${
-                  showLyrics ? 'bg-purple-600' : 'bg-gray-700 hover:bg-gray-600'
-                }`}
-              >
-                Lyrics
-              </button>
-              <button
-                onClick={() => { setShowLyrics(false); setShowCredits(true); }}
-                className={`px-6 py-3 rounded-lg font-semibold ${
-                  showCredits ? 'bg-purple-600' : 'bg-gray-700 hover:bg-gray-600'
-                }`}
-              >
-                Credits
-              </button>
-            </div>
-
-            {/* Lyrics */}
-            {showLyrics && metadata.lyrics && (
-              <div className="bg-gray-800/50 backdrop-blur rounded-2xl p-8 mb-8">
-                <h3 className="text-2xl font-bold mb-4">Lyrics</h3>
-                <pre className="text-lg text-gray-300 whitespace-pre-wrap font-sans leading-relaxed">
-                  {metadata.lyrics}
-                </pre>
-              </div>
+          {/* Metadata Content */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {metadataTypes.find(m => m.id === activeMetadata)?.content ? (
+              <pre className="text-gray-300 whitespace-pre-wrap font-sans leading-relaxed">
+                {metadataTypes.find(m => m.id === activeMetadata).content}
+              </pre>
+            ) : (
+              <p className="text-gray-500 italic">No {metadataTypes.find(m => m.id === activeMetadata)?.label.toLowerCase()} available</p>
             )}
+          </div>
 
-            {/* Credits */}
-            {showCredits && metadata.credits && (
-              <div className="bg-gray-800/50 backdrop-blur rounded-2xl p-8 mb-8">
-                <h3 className="text-2xl font-bold mb-4">Credits</h3>
-                <pre className="text-lg text-gray-300 whitespace-pre-wrap font-sans">
-                  {metadata.credits}
-                </pre>
-              </div>
-            )}
-
-            {/* Download button */}
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-center">
-              <h3 className="text-2xl font-bold mb-3">Download .oggpack File</h3>
-              <p className="text-gray-200 mb-6">
-                Keep this pack forever. Play anywhere, offline.
-              </p>
-              <button
-                onClick={() => window.open(`${API_URL}/uploads/oggpack/${id}.oggpack`, '_blank')}
-                className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-bold text-lg"
-              >
-                ⬇ Download Pack
-              </button>
-            </div>
-          </>
-        )}
+          {/* Download Button */}
+          <div className="p-4 border-t border-gray-800">
+            <button
+              onClick={() => window.open(`${API_URL}/uploads/oggpack/${id}.oggpack`, '_blank')}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-4 rounded-lg font-bold text-lg"
+            >
+              ⬇ Download .oggpack
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
