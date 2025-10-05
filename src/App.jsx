@@ -6,6 +6,7 @@ import CreatorMode from './components/CreatorMode';
 import PlayerPreview from './components/PlayerPreview';
 import SocialMode from './components/SocialMode';
 import ConcertRoom from './components/ConcertRoom';
+import ExperiencePlayer from './components/ExperiencePlayer';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -46,6 +47,7 @@ function App() {
           <Route path="/preview/:id" element={<PlayerPreview token={token} />} />
           <Route path="/social" element={<SocialMode token={token} user={user} />} />
           <Route path="/concert/:id" element={<ConcertRoom token={token} user={user} />} />
+          <Route path="/experience/:id" element={<ExperiencePlayer token={token} />} />
         </Routes>
       </div>
     </BrowserRouter>
