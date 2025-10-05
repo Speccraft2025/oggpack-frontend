@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import BuyPackButton from './BuyPackButton';
 
 const API_URL = 'https://oggpack-backend-production.up.railway.app';
 
@@ -138,6 +139,18 @@ function PlayerPreview({ token }) {
           >
             Back to Creator
           </button>
+          {/* Buy Pack Section */}
+<div className="bg-gray-800 rounded-lg p-6 mt-6">
+  <h2 className="text-xl font-bold text-white mb-4">Own This Pack</h2>
+  <p className="text-gray-300 mb-4">
+    Download the high-quality .oggpack file with all metadata, lyrics, and credits.
+  </p>
+  <BuyPackButton 
+    oggpackId={id} 
+    oggpackTitle={oggpack.title}
+    token={token} 
+  />
+</div>
         </div>
       </div>
     </div>
