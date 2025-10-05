@@ -36,6 +36,17 @@ export default function ExperiencePlayer({ token }) {
   };
 
   const checkOwnership = async () => {
+    // ======================================
+    // MOCK: Bypass payment for UI development
+    // TODO: Remove this when Stripe is working
+    // ======================================
+    console.log('🎨 DEVELOPMENT MODE: Mocking ownership as TRUE');
+    setOwns(true);
+    setLoading(false);
+    return;
+    
+    // Real implementation (commented out for development):
+    /*
     try {
       const { data } = await axios.get(
         `${API_URL}/api/payment/check-ownership/${id}`,
@@ -47,6 +58,7 @@ export default function ExperiencePlayer({ token }) {
     } finally {
       setLoading(false);
     }
+    */
   };
 
   const togglePlay = () => {
